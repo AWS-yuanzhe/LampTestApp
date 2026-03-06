@@ -1,0 +1,134 @@
+# LampTestApp Deployment Configuration
+
+aws:
+  region: us-east-1
+
+lightsail:
+  instance_name: LampTestApp
+  static_ip: ""
+  bundle_id: "nano_3_0"
+  blueprint_id: "amazon_linux_2023"
+
+application:
+  name: lamp-test-app
+  version: "1.0.0"
+  type: web
+
+  package_files:
+    - "index.php"
+
+  package_fallback: false
+
+  environment_variables:
+    APP_ENV: production
+    APP_DEBUG: false
+
+dependencies:
+  apache:
+    enabled: true
+    version: "latest"
+    config:
+      document_root: "/var/www/html"
+      enable_ssl: false
+      enable_rewrite: true
+
+  php:
+    enabled: true
+    version: "8.3"
+    config:
+      extensions:
+        - "curl"
+        - "mbstring"
+      enable_composer: false
+
+  git:
+    enabled: true
+    config:
+      install_lfs: false
+
+  firewall:
+    enabled: true
+    config:
+      allowed_ports:
+        - "22"
+        - "80"
+        - "443"
+      deny_all_other: true
+
+deployment:
+  timeouts:
+    ssh_connection: 120
+    command_execution: 300
+    health_check: 180
+
+  retries:
+    max_attempts: 3
+    ssh_connection: 5
+
+  steps:
+    pre_deployment:
+      common:
+        enabled: true
+        update_packages: true
+        create_directories: true
+        backup_enabled: true
+      dependencies:
+        enabled: true
+        install_system_deps: true
+        configure_services: true
+
+    post_deployment:
+      common:
+        enabled: true
+        verify_extraction: true
+        create_env_file: true
+        cleanup_temp_files: true
+      dependencies:
+        enabled: true
+        configure_application: true
+        set_permissions: true
+        restart_services: true
+
+    verification:
+      enabled: true
+      health_check: true
+      external_connectivity: true
+      endpoints_to_test:
+        - "/"
+      port: 80
+
+github_actions:
+  triggers:
+    push_branches:
+      - main
+    workflow_dispatch: true
+
+  jobs:
+    test:
+      enabled: true
+      language_specific_tests: true
+
+    deployment:
+      deploy_on_push: true
+      deploy_on_pr: false
+      artifact_retention_days: 1
+      create_summary: true
+
+monitoring:
+  health_check:
+    endpoint: "/"
+    expected_content: "LAMP Test App"
+    max_attempts: 10
+    wait_between_attempts: 10
+    initial_wait: 30
+
+security:
+  file_permissions:
+    web_files: "644"
+    directories: "755"
+    config_files: "600"
+
+backup:
+  enabled: true
+  retention_days: 7
+  backup_location: "/var/backups/lamp-test-deployments"

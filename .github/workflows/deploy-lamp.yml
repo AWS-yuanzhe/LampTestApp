@@ -1,0 +1,22 @@
+name: Deploy LAMP Test App
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.php'
+      - 'deployment-lamp-stack.config.yml'
+      - '.github/workflows/deploy-lamp.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy LAMP Application
+    uses: AWS-yuanzhe/lightsail-deploy/.github/workflows/deploy-generic-reusable.yml@main
+    with:
+      config_file: 'deployment-lamp-stack.config.yml'
+    secrets: inherit
