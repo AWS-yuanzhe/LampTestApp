@@ -19,7 +19,7 @@
     <div class="card">
         <h1>LAMP Test App</h1>
         <p class="status">Deployment successful ✅</p>
-        <p class="info">This is a test application deployed via the lightsail-deploy reusable workflow.</p>
+        <p class="info">Deployed via lightsail-deploy reusable workflow.</p>
     </div>
     <div class="card">
         <h2>Server Info</h2>
